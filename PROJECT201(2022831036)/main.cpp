@@ -55,9 +55,9 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return -1;
     }
-    
+
     SDL_Window* window = SDL_CreateWindow("Snake Game by Nabila", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    
+
     if (!window) {
         cerr << "Failed to create window: " << SDL_GetError() << endl;
         TTF_Quit();
@@ -130,17 +130,19 @@ int main(int argc, char* argv[]) {
     //poison food variables
     int poisonfood_x = -1;
     int poisonfood_y = -1;
-    const int poisonfood_interval = 10;
+    
     bool poisonfoodpresent = false;
-    int poisonfood_duration = 60;
+    int foodeaten = 0;
     int poisonfood_timer = 0;
+    const int poisonfood_duration = 40;
+
     //building obstacle logic
 
     vector<vector<pair<int, int>>> obstacles;
 
-    int no_of_obstacles = 3;
+    int no_of_obstacles = 1;
 
-    int max_length = 10;
+    int max_length = 5;
 
     for (int i = 0; i < no_of_obstacles; ++i) {
         int strt_x = rand() % GRID_WIDTH;
@@ -205,8 +207,9 @@ int main(int argc, char* argv[]) {
         //else if (new_head.second >= GRID_HEIGHT)
         //    new_head.second = 0;
         snake.insert(snake.begin(), new_head);
-        if (score % poisonfood_interval == 0 && score > 0 && !poisonfoodpresent)
-        {
+        if (foodeaten == 4 && foodeaten > 0 && !poisonfoodpresent)
+        {   
+            foodeaten = 0;
             poisonfood_x = rand() % GRID_WIDTH;
             poisonfood_y = rand() % GRID_HEIGHT;
             poisonfoodpresent = true;
@@ -222,8 +225,10 @@ int main(int argc, char* argv[]) {
                 poisonfoodpresent = false;
             }
         }
+ 
         //check if its the time to generate bonus food
         if (score % bonus_interval == 0 && score > 0 && !bonuspresent) {
+            score += 10;
             bonusfoodx = rand() % GRID_WIDTH;
             bonusfoody = rand() % GRID_HEIGHT;
             bonuspresent = true;
@@ -232,7 +237,7 @@ int main(int argc, char* argv[]) {
         //bonus food duration
         if (bonuspresent)
         {
-            bonustimer-=2;
+            bonustimer -= 2;
             if (bonustimer <= 0)
             {
                 bonusfoodx = -1;
@@ -242,7 +247,7 @@ int main(int argc, char* argv[]) {
         }
         if (new_head.first == poisonfood_x && new_head.second == poisonfood_y)
         {
-            score -= 5;
+            score -= 10;
             poisonfood_x = -1;
             poisonfood_y = -1;
             poisonfoodpresent = false;
@@ -258,6 +263,7 @@ int main(int argc, char* argv[]) {
 
         // Food consumption
         if (new_head.first == foodX && new_head.second == foodY) {
+            foodeaten += 1;
             score += 5;
             foodX = rand() % GRID_WIDTH;
             foodY = rand() % GRID_HEIGHT;
@@ -271,7 +277,7 @@ int main(int argc, char* argv[]) {
         // Collision detection
         if (new_head.first < 0 || new_head.second < 0 || new_head.first >= GRID_WIDTH || new_head.second >= GRID_HEIGHT) {
             running = false;
-            }
+        }
         for (int i = 1; i < snake.size(); ++i) {
             if (new_head == snake[i]) {
                 running = false;
@@ -389,14 +395,14 @@ int main(int argc, char* argv[]) {
     string newhigh_score_txt = "New High Score: " + to_string(high_score);
 
     drawText(renderer, font, exit_txt, SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 80, red);
-   
+
     drawText(renderer, font, finalscore_txt, SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 30, red);
-    
+
     drawText(renderer, font, newhigh_score_txt, SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 20, red);
-    
+
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(3000); 
+    SDL_Delay(3000);
 
     // Clean up
     TTF_CloseFont(font);

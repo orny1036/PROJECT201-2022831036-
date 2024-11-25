@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
 
     const int bonus_interval = 20;
 
-    const int bonus_duration = 40;
+    const int bonus_duration = 60;
     //speed variables
     int current_speed = 150;
 

@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
     int foodX = rand() % GRID_WIDTH;
 
     int foodY = rand() % GRID_HEIGHT;
+
     //bonus food variables
     int bonusfoodx = -1;
 
@@ -111,6 +112,7 @@ int main(int argc, char* argv[]) {
     const int bonus_interval = 20;
 
     const int bonus_duration = 60;
+
     //speed variables
     int current_speed = 150;
 
@@ -124,7 +126,14 @@ int main(int argc, char* argv[]) {
     //level variables
     int level = 1;
     int level_interval = 30;
-    
+
+    //poison food variables
+    int poisonfood_x = -1;
+    int poisonfood_y = -1;
+    const int poisonfood_interval = 10;
+    bool poisonfoodpresent = false;
+    int poisonfood_duration = 60;
+    int poisonfood_timer = 0;
     //building obstacle logic
 
     vector<vector<pair<int, int>>> obstacles;
@@ -178,26 +187,41 @@ int main(int argc, char* argv[]) {
                     currentDirection = "RIGHT";
             }
         }
-        if (score > high_score)
-        {
-            high_score = score;
-        }
+        //high score adjustment
+        high_score = max(high_score, score);
+        //level adjustment
         level = max(level, (score / level_interval + 1));
         // Move snake
         pair<int, int> new_head = snake.front();
         new_head.first += direction[currentDirection].first;
         new_head.second += direction[currentDirection].second;
-        //if the snake can travel through boundaries
-        if (new_head.first < 0)//crosses left boundary
-            new_head.first = GRID_WIDTH - 1;
-        else if (new_head.first >= GRID_WIDTH)//crosses right boundary
-            new_head.first = 0;
-        else if (new_head.second < 0)//crosses upward boundary
-            new_head.second = GRID_HEIGHT - 1;
-        else if (new_head.second >= GRID_HEIGHT)
-            new_head.second = 0;
+        ////if the snake can travel through boundaries
+        //if (new_head.first < 0)//crosses left boundary
+        //    new_head.first = GRID_WIDTH - 1;
+        //else if (new_head.first >= GRID_WIDTH)//crosses right boundary
+        //    new_head.first = 0;
+        //else if (new_head.second < 0)//crosses upward boundary
+        //    new_head.second = GRID_HEIGHT - 1;
+        //else if (new_head.second >= GRID_HEIGHT)
+        //    new_head.second = 0;
         snake.insert(snake.begin(), new_head);
-
+        if (score % poisonfood_interval == 0 && score > 0 && !poisonfoodpresent)
+        {
+            poisonfood_x = rand() % GRID_WIDTH;
+            poisonfood_y = rand() % GRID_HEIGHT;
+            poisonfoodpresent = true;
+            poisonfood_timer = poisonfood_duration;
+        }
+        if (poisonfoodpresent)
+        {
+            poisonfood_timer--;
+            if (poisonfood_timer <= 0)
+            {
+                poisonfood_x = -1;
+                poisonfood_y = -1;
+                poisonfoodpresent = false;
+            }
+        }
         //check if its the time to generate bonus food
         if (score % bonus_interval == 0 && score > 0 && !bonuspresent) {
             bonusfoodx = rand() % GRID_WIDTH;
@@ -209,12 +233,19 @@ int main(int argc, char* argv[]) {
         if (bonuspresent)
         {
             bonustimer-=2;
-            if (bonustimer == 0)
+            if (bonustimer <= 0)
             {
                 bonusfoodx = -1;
                 bonusfoody = -1;
                 bonuspresent = false;
             }
+        }
+        if (new_head.first == poisonfood_x && new_head.second == poisonfood_y)
+        {
+            score -= 5;
+            poisonfood_x = -1;
+            poisonfood_y = -1;
+            poisonfoodpresent = false;
         }
         //consumption of bonus food
         if (new_head.first == bonusfoodx && new_head.second == bonusfoody) {
@@ -238,9 +269,9 @@ int main(int argc, char* argv[]) {
         }
 
         // Collision detection
-        /*if (new_head.first < 0 || new_head.second < 0 || new_head.first >= GRID_WIDTH || new_head.second >= GRID_HEIGHT) {
-            running = false;*/
-            //}
+        if (new_head.first < 0 || new_head.second < 0 || new_head.first >= GRID_WIDTH || new_head.second >= GRID_HEIGHT) {
+            running = false;
+            }
         for (int i = 1; i < snake.size(); ++i) {
             if (new_head == snake[i]) {
                 running = false;
@@ -285,6 +316,22 @@ int main(int argc, char* argv[]) {
                     int dy = bonusradius - h;
                     if ((dx * dx + dy * dy) <= (bonusradius * bonusradius)) {
                         SDL_RenderDrawPoint(renderer, bonusCenterX + dx, bonusCenterY + dy);
+                    }
+                }
+            }
+        }
+        if (poisonfoodpresent)
+        {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            int poison_centerx = poisonfood_x * TILE_SIZE + TILE_SIZE / 2;
+            int poison_centery = poisonfood_y * TILE_SIZE + TILE_SIZE / 2;
+            int poison_radius = TILE_SIZE / 3;
+            for (int w = 0; w < poison_radius * 2; w++) {
+                for (int h = 0; h < poison_radius * 2; h++) {
+                    int dx = poison_radius - w;
+                    int dy = poison_radius - h;
+                    if ((dx * dx + dy * dy) <= (poison_radius * poison_radius)) {
+                        SDL_RenderDrawPoint(renderer, poison_centerx + dx, poison_centery + dy);
                     }
                 }
             }

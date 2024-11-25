@@ -121,12 +121,15 @@ int main(int argc, char* argv[]) {
     int score = 0;
 
     int high_score = 0;
-
+    //level variables
+    int level = 1;
+    int level_interval = 30;
+    
     //building obstacle logic
 
     vector<vector<pair<int, int>>> obstacles;
 
-    int no_of_obstacles = 4;
+    int no_of_obstacles = 3;
 
     int max_length = 10;
 
@@ -179,6 +182,7 @@ int main(int argc, char* argv[]) {
         {
             high_score = score;
         }
+        level = max(level, (score / level_interval + 1));
         // Move snake
         pair<int, int> new_head = snake.front();
         new_head.first += direction[currentDirection].first;
@@ -315,8 +319,11 @@ int main(int argc, char* argv[]) {
 
         // Draw score
         SDL_Color white = { 255, 255, 255, 255 };
+        SDL_Color green = { 0, 255, 0, 255 };
         string score_txt = "Score: " + to_string(score);
+        string level_txt = "Level: " + to_string(level);
         drawText(renderer, font, score_txt, 350, 20, white);
+        drawText(renderer, font, level_txt, 20, 20, green);
         SDL_RenderPresent(renderer);
         SDL_Delay(current_speed);
 

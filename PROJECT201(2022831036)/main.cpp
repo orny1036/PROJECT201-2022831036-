@@ -109,9 +109,9 @@ int main(int argc, char* argv[]) {
 
     int bonustimer = 0;
 
-    const int bonus_interval = 20;
+    int bonus_interval = 0;
 
-    const int bonus_duration = 60;
+    const int bonus_duration = 40;
 
     //speed variables
     int current_speed = 150;
@@ -207,7 +207,9 @@ int main(int argc, char* argv[]) {
         //else if (new_head.second >= GRID_HEIGHT)
         //    new_head.second = 0;
         snake.insert(snake.begin(), new_head);
-        if (foodeaten == 4 && foodeaten > 0 && !poisonfoodpresent)
+        if (score < 0)
+         running = false;
+        if (foodeaten == 4 && !poisonfoodpresent)
         {   
             foodeaten = 0;
             poisonfood_x = rand() % GRID_WIDTH;
@@ -227,8 +229,9 @@ int main(int argc, char* argv[]) {
         }
  
         //check if its the time to generate bonus food
-        if (score % bonus_interval == 0 && score > 0 && !bonuspresent) {
-            score += 10;
+        if (bonus_interval == 5 && !bonuspresent) {
+
+            bonus_interval = 0;
             bonusfoodx = rand() % GRID_WIDTH;
             bonusfoody = rand() % GRID_HEIGHT;
             bonuspresent = true;
@@ -237,7 +240,7 @@ int main(int argc, char* argv[]) {
         //bonus food duration
         if (bonuspresent)
         {
-            bonustimer -= 2;
+            bonustimer -= 1;
             if (bonustimer <= 0)
             {
                 bonusfoodx = -1;
@@ -254,6 +257,8 @@ int main(int argc, char* argv[]) {
         }
         //consumption of bonus food
         if (new_head.first == bonusfoodx && new_head.second == bonusfoody) {
+
+            bonus_interval = 0;
             score += 10;
             bonuspresent = false;
             bonusfoodx = -1;
@@ -264,6 +269,7 @@ int main(int argc, char* argv[]) {
         // Food consumption
         if (new_head.first == foodX && new_head.second == foodY) {
             foodeaten += 1;
+            bonus_interval += 1;
             score += 5;
             foodX = rand() % GRID_WIDTH;
             foodY = rand() % GRID_HEIGHT;

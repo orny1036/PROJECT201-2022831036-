@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
         //bonus food duration
         if (bonuspresent)
         {
-            bonustimer--;
+            bonustimer-=2;
             if (bonustimer == 0)
             {
                 bonusfoodx = -1;
